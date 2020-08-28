@@ -88,6 +88,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		this();
 		//注册初始化的类
 		register(componentClasses);
+		//刷新方法
 		refresh();
 	}
 

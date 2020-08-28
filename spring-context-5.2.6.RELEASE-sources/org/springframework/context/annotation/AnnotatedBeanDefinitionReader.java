@@ -252,16 +252,19 @@ public class AnnotatedBeanDefinitionReader {
 
 		//把传入的类转换成BeanDefinition，利用了反射把class转换成一个AnnotatedGenericBeanDefinition对象，里面带注释泛型等信息
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
-		//shouldSkip方法判断是否跳过
+		//shouldSkip方法判断是否带有@Conditional注解 如果带有注解就跳过
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
 		}
 
-		abd.setInstanceSupplier(supplier);
+		abd.setInstanceSupplier(supplier);//实例化提供者
+		//主要对元数据是否有@scope注解的值进行处理
 		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
 		abd.setScope(scopeMetadata.getScopeName());
+		//对bean的名字进行生成
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 
+		//对@lazy（延迟加载）、@DependsOn（初始化顺序	）、@Role、@Description几个注解进行了处理
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {

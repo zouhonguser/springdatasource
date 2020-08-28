@@ -77,7 +77,9 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 
 	@Override
 	public String generateBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
+		//判断是否为带注解的BeanDefinition
 		if (definition instanceof AnnotatedBeanDefinition) {
+			//
 			String beanName = determineBeanNameFromAnnotation((AnnotatedBeanDefinition) definition);
 			if (StringUtils.hasText(beanName)) {
 				// Explicit bean name found.
@@ -85,6 +87,7 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 			}
 		}
 		// Fallback: generate a unique default bean name.
+		//生成一个唯一不重复的bean name
 		return buildDefaultBeanName(definition, registry);
 	}
 
@@ -95,16 +98,18 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
 	 */
 	@Nullable
 	protected String determineBeanNameFromAnnotation(AnnotatedBeanDefinition annotatedDef) {
-		AnnotationMetadata amd = annotatedDef.getMetadata();
-		Set<String> types = amd.getAnnotationTypes();
+		AnnotationMetadata amd = annotatedDef.getMetadata();//得到元数据
+		Set<String> types = amd.getAnnotationTypes();//得到类上的所有注解
 		String beanName = null;
-		for (String type : types) {
-			AnnotationAttributes attributes = AnnotationConfigUtils.attributesFor(amd, type);
+		for (String type : types) {//遍历注解
+			AnnotationAttributes attributes = AnnotationConfigUtils.attributesFor(amd, type);//attributesFor方法获取注解对应的所有属性
 			if (attributes != null) {
 				Set<String> metaTypes = this.metaAnnotationTypesCache.computeIfAbsent(type, key -> {
 					Set<String> result = amd.getMetaAnnotationTypes(key);
 					return (result.isEmpty() ? Collections.emptySet() : result);
 				});
+				//isStereotypeWithNameValue方法判断这些注解是否是@Component注解，是否继承了@component注解，是否是@ManageBean注解，是否是@Named注解
+				// 如果满足以上条件中的任何一个并且包含value属性，则返回true
 				if (isStereotypeWithNameValue(type, metaTypes, attributes)) {
 					Object value = attributes.get("value");
 					if (value instanceof String) {
